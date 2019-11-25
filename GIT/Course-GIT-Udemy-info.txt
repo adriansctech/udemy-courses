@@ -1,0 +1,580 @@
+Curso de GIT de UDEMY
+
+------------------------------------
+	Sección 2 GIT FUNDAMENTOS 
+------------------------------------
+
+	-- Comandos de GIT --
+
+	.-Saber version de GIT
+		git --version
+
+	.-Obtener ayuda de los comandos
+		git help commit
+
+	.-Configurar GIT
+		git config --global user.name "nombre-ususario-git"
+		git config --global user.email "email-ususario-git"
+
+	git config --global -e
+	->Como ver el fichero de configuración de GIT desde la terminal
+	
+
+	-- Empezando con un repositorio nuevo --
+		git init
+		->Con este comando se creará una carpeta dentro del proyecto donde se almacenará la información necesaria para el correcto funcionamiento de GIT, dicha carpeta está oculta.
+		->No se recomienda modificar estos ficheros a mano.
+		->Si queremos eliminal el repositorio, solo debemos borrar dicha carpeta (.git)
+
+	-- Comprobando el estado de nuestro repositorio --
+		git status
+		->Con este comando GIT, nos mostrará el estado del repositorio
+	
+	-- Incluyendo ficheros en el STAGE de GIT --
+		git add .
+		->Con este comando git introducirá en el stage todos los ficheros del repositorio
+	
+	-- Creando COMMITS --
+		git commit -m "mensaje"
+		->Le estamos indicando a GIT, que tome un snapshot del estado de nuestro proyecto (se incluirán todos los ficheros que están en el stage de GIT). En el mensaje podremos poner algún tetxo que defina el estado de nuestro proyecto, en este caso sería 2primer commit", por ejemplo.
+
+	--Revertir los ultimos cambios realizados hasta el último COMMIT--
+		git checkout -- .
+		->Este comando sirve para dejar nuestro repositorio local, tal y como lo dejamos en el último commit.
+
+	-- Para revisar el log de nuestro repositorio --
+		git log
+		->Los commits se muestran del más reciente al más nuevo
+		->Se muestra el hash del commit, el autor, el correo del autor, la fecha de creación el commit y el mensaje del mismo.
+	
+	--Diferentes maneras de agregar ficheros a nuestro repositorio --
+		git add *.png
+		->De esta manera agregaremos todos los ficheros con extensión de tipo png.
+
+		git add [folder_name]/
+		->Este comando incluirá todos los ficheros que se encuentren dentro de la carpeta que le hemos indicado en el stage. 
+
+		git reset *.xml
+		->Con este comando excluiremos del stage todos los ficheros con extensión xml (para que esto funcione el fichero que queremos exlcuir debe de estar ya dentro del stage).
+
+		git add "*.txt"
+		->Este comando incluirá dentro del stage todos los ficheros del proyecto que tengan extensión txt (todos, todos).
+		
+		git add *.txt 
+		->Este comando incluirá dentro del stage todos los ficheros que tengan extensión txt, pero del directorio  actual.
+		
+		git add --all
+		->Agrega todos los ficheros, todos.
+
+		git add index.html README.md 
+		->Con este comando incluimos los ficheros que le vamos indicando dentro del stage.
+
+		git add pdfs/*.pdf
+		->Este comando agregará todos los ficheros con extensión pdf, que se encuentren dentro de la carpeta llamada pdfs.
+
+	--Otras maneras de consultar el log de GIT --
+
+		git log --oneline
+		->Este comando nos mostrará los commits de nuestro proyecto, su mensaje y el hash pequeño, también nos indicará en que commit nos encontramos ahora mismo (los indica con la palabra HEAD).
+
+		git log --oneline --decorate --all --graph
+		->El parámetro --all, indicará que se muestre información referente a los commits y demás.
+		->Los parámetros --decorate y --graph, indicará que se muestre de manera elegante el estado de las ramas.
+		->el parámetro --oneline, sirve para mostrar información en formato corto.
+
+		git status -s 
+		->Con este comando, nos mostrará solo los ficheros que se han modificado.
+		->Mostrará de color verde los ficheros que están en el stage y de color rojo, los que no lo están.
+
+		git status -s -b
+		->Con este comando nos mostrará de manera silenciosa (-s), información de los ficheros modificados y la rama en la que estamos trabajando.
+
+	-- Creando aliass para nuestros comandos --		
+		->Estos Alias se pueden crear de manera global.
+
+		 git config --global alias.lg "log --oneline --decorate --all --graph"
+		 ->Con este comando estamos creando un alias para todo el comando, a partir de ahora podemos ejecutar todo el comando, pero solo introduciendo en la terminal git lg.
+
+		 git config --global alias.s "status -s -b"
+		 ->Con este comando creamos un alias para que muestre el status de manera reducida además de mostrarnos el nombre de la rama.
+
+		 Estos comandos quedan registrados dentro del fichero global de nuestro repositorio de GIT.
+		 Podemos comprobar estos cambios con los siguientes comandos:
+		 	git comfig --gloabl -e
+		 	git config --global -l
+
+------------------------------
+	Sección 3 clase 15
+------------------------------
+
+	Ahora con los alias que hemos creado, al ejecutar el comando 
+	git s 
+	(git status), nos aparecerán fichero con signos de interrogante de color rojo al principio, esto significa que estos ficheros no están en el stage de git.
+
+	Comprobar que cambios se han llevado a cabo en nuestro repositorio
+	git diff
+	Si ejecutamos este comando  nos mostrará las líneas del fichero que se han modificado o eliminado (ademas de mostrarlos delante de estas el signo -) y de color verde las nuevas líneas de los ficheros o el resultado de las líneas tras su modificación (ademas de mostrarnos delante de estas líneas el signo +) desde el commit anterior hasta ahora.
+
+	Para comprobar los cambios realizados en los ficheros antes del último commit (recordamos que si los ficheros están en el stage no nos mostrará nada el comando diff).
+	git diff --staged
+
+	---------------------------------------------------------------------------
+		Como modificar un commit una vez realizado o modificar su mensaje
+	---------------------------------------------------------------------------
+	Como sacar un fichero del stage de GIT
+	git reset HEAD README.md
+
+	Para revertir los cambios realizados en algún fichero
+	git checkout -- README.md
+
+	Para introducir fichero en el stage y hacer un commit de un comando solo
+	git commit -am "Mensaje del commit"
+
+	Modificar el contenido del manseja de el commit
+	git commit --amend -m "Nuevo mensaje para el commit"
+
+	Como introducir cambios en un commit anterior
+	git reset --soft HEAD^
+	Al ejecutar este comando y luego hacer un git log, mostrará este fichero con dos M, una de color verde y otra de color rojo, esto significa que en este fichero se modificó y luego se agregó.
+
+
+
+	---------------------------------
+		Viajes en el tiempo
+	---------------------------------
+	Para ir a cualquier commit podemos utilizar el hash que nos aparece al ejecutar el comando git lg (Alias de git log), cogemos el hash y ejecutamos el siguiente comando:
+	git reset --soft d7da42f
+
+	Para ir a otro commit de manera mixed (por defecto si no incluimos ningún parámetro seguido de reset ejecuta este parámetro)
+	git reset --mixed d7da42f	
+	Al ejecutar este comando, peredermos los commits anteriores, pero los ficheros nuevos y sus posibles modificaciones vamos a seguir teniendolos en la carptea de nuestro proyecto.
+
+	Si queremos destruir todos los cambios posteriores al commit en el que nos encontramos ejecutaremos el siguiente comando:
+	git reset --hard d7da42f
+	Esto destruirá los cambios realizados en los ficheros que habían persistido con el viaje en el tiempo anterior.
+
+	Aunque hayamos ejecutado el comando reset hard o sof y eliminado commits posteriores, git conserva un registro de todo lo que pasa en nuestro repositorio, para ver este registro ejecutaremos el siguiente comando:
+	git reflog, luego podemos regresar a ese punto utilizando el hash del commit y el siguiente comando:
+	git reset --hard adbb96e
+	Y de esta manera podemos recuperar todos los commits anteriores hasta el punto que le hemos indicado.
+
+
+	---------------------------------------------------------
+		Cambiar nombre y eliminar archivos mediante GIT
+	---------------------------------------------------------
+	Como cambiar de nombre a un fichero con comandos GIT
+	
+	git mv destruir-mundo.txt salvar-mundo.txt
+	Ahora si hacemos un GIT status, nos mostrará delante de el fichero que hemos modificado una R de color verde, esto nos indica que hemos renombrado el fichero y en la parte de la derecha nos mostrará el nombre original->nombre nuevo.
+	Si ejecutamos un git status nos mostrará toda la información anteriormente descrita.
+
+	Como eliminar un archivo con comandos de GIT
+	git rm salvar-mundo.txt
+	Ahora si ejecutamos un git status o git s, nos mostrará el nombre del fichero precedido de una letra D de color verde, indicandonos que se ha elminado.
+
+	Como cambiar nombre a ficheros fuera de los comandos de GIT
+	Si renombramos fuera de GIT un fichero de nuestro proyecto, el considera que este archivo ha sido eliminado y se ha creado uno nuevo. Una vez realizado el cambio si lo agregamos al stage con el siguiente comando
+	git add -- .
+	Al ejecutar el comando git s (alias de GIt status), si que nos notificará que hemos renombrado este fichero.
+	De esta foorma ya podremos hacer el commit sin problemas.
+
+	Como eliminar un fichero fuera de los comandos de GIT
+	Al eliminar un fichero mediante la interfaz gráfica y hacer un GIt s (alias de GIT status) nos indicará que se ha eliminado un fichero poniendo delante del nombre del mismo una D de color rojo. Si ejecutamos el comando git add -u, se actualizará el repositorio y pondrá la D mayúscula de color verde incluyendo en el stage la eliminación de dicheo fichero.
+	De esta foorma ya podremos hacer el commit sin problemas.
+
+	-------------------------------------------------
+		Ignorando archivos qe no deseamos
+	-------------------------------------------------
+	Para esto deberemos de crear un fichero con nombre .gitignore, su ubicación será en el mismo directorio donde se encuentra la carpeta .git.
+	Si queremos exluir de nuestro repositorio un fichero en concreto, solo deberíamos introducir el nombre del mismo en el fichero .gitignore. Podemos utilizar expresiones regular, por ejemplo, si queremos excluir todos los fichero con extensión .log de nuestro proyecto, dentro del fichero .gitignore introduciremos *.log
+	Si por el contrario queremos excluir un directorio entero, con sus ficheros, carpetas etc. introduciremos dentro del fichero .gitignore, el nombre del directorio seguido de '/', ejemplo node_modules/.
+	Por último, deberíamos incluir dentro del stage este fichero, el .gitignore.
+
+	------------------------------------------
+		Tarea de final de sección, solución
+	------------------------------------------
+	El fichero historia.log no aparece al reconstruir el proyecto debido a que no lo hemos incluido en el stage en ningún momento.
+
+
+Sección 4 
+Ramas, uniones, conflictos y tags
+	Las ramas son lineas del tiempo alternativas, que podremos modificar sin afectar al código original.
+	El merge, es cuando queremos unir una rama con otra, hay tres posibles escenarios:
+		.-Fast-forward: Es cuando git detecta que no hay ningun cambio en la rama principal y los cambios pueden integrados de forma transparente por así decirlo y cada uno de los commit formará parte de la rama principal, como si nunca se hubieran separado.
+		.-Merga o uniones automáticas: es cuando GIt detecta que en la rama principal ha habido algún cambio que la rama secundario desconoce. Entonces GIT si detecta que no se modificaron los mismos archivos en las ramas, lo puede unir de manera automática sin más problema.
+		.-Merge o uniones manuales: Es cuando GIT no puede hacer la unión de manera automática. GIT alertará de que existen conflictos y deberemos de solucionarlos de manera manual y una vez solucionado estos conflictos, GIT craeará un commit nuevo, que se conoce como el merge commit. Luego podremos continuar trabajando sin ningún problema.
+
+	MERGE Fast-forward 
+	.-Para crear una nueva rama utilizaremos el siguiente comando:
+	git branch [nombre_rama]
+	.-Para ver las ramas que existen utilizaremos el siguiente comando:
+	git branch
+		Git mostrará de color verde la rama en la que nos encotramos en este momento.
+	.-Para movernos a una rama utilizaremos el siguiente comando:
+	git checkout [nombre_rama]
+	.-Para integrar una nueva rama en la rama master:
+		Primero es aconsejable ver que cambio hay entre las dos ramas, para esto utilzaremos el siguiente comando:
+			git diff rama-villanos master
+		Para hacer una unión, nostros debemos de estar en la rama donde queremos integrar los cambios, normalmente es la master. Ahora si hacemos un GIT log o GIT lg (alias de GIT log), podremos ver qe el HEAD apunta a una rama que está por debajo, pero apunta hacia la rama master.
+		Ahora para hacer la unión de la nueva rama que hemos creado, en la rama master (en la que nos encontramos), utilizaremos el siguiente comando:
+			git merge [rama-villanos]
+		Ahora si hacemos un GIT lg (alias de git log), nos mostrará que las dos rama (master y rama-villanos), apuntan al mismo sitio, en este caso el HEAD también apunta hacia ellas.
+		Una vez creada la unión de las dos ramas, hay que plantearse si la rama que hemos unido a master vale la pena que exista aún, es decir igual más adelante en el tiempo debemos crear una nueva rama con ese nombre. Esto no sería posible.
+	.-Como borrar ramas, despues de una unión.
+		Esto la realizaremos con el siguiente comando:
+			git branch -d [nombre rama]
+
+	Merge automático
+		.-Para crear una nueva rama y situarnos en ella de manera automática:
+		git checkout -b [nombre_rama]
+		.-Ahora para crear un merge de manera automática, nos situamos en la ram amaster, y ejecutamos el siguiente comando:
+		git marge [nombre_rama]
+		.-Nos pedirá que modifiquemos información del mensaje del merge, este paso es opcional, el ya crea un mensaje de manera automática.
+		.-Ahora si ejecutamos el comando de GIT l (alias de GIT log), nos mostrará información de lo que ha ocurrido en las ramas, el nombre de sus commmits, merges y demás.
+
+
+	Uniones con conflictos
+		.-Si se modifica el mismo fichero o la misma linea del mismo fichero en las dos ramas que queremos unir, dará lugar aun conflicto, GIT no podrá resolverlo por el mismo.
+		.-Nos indicará en que fichero ha ocurrido el mismo conflicto de la siguiente manera:
+		CONFLICTO (contenido): Conflicto de fusión en misiones.md
+		.-También nos indicará de que arreglemos los conflictos y hagamos un commit.
+		.-Si abrimos el fichero donde se han generado los conflictos, observaremos que hay una linea que pone lo siguiente:
+		<<<<<<< HEAD
+		Y otra linea que pone lo siguiente:
+		=======
+		Esto sirve para indicar donde se encuantran el conflicto dentro del fichero.
+		.-Ahora deberemos modificar este mismo fichero nosotros mismos, dejando únicamente lo que nos interese. Después podremos hacer un commit sin ningún tipo de problemas
+
+	Tags
+		.-Son referencias a un commit específico en el tiempo
+		.-Crearemos etiquetas con el siguiente comando:
+		git tag [nombre_tag]
+		.-Para poder ver todos los TAGS de nuestro repositorio, utilizaremos el siguiente comando:
+		git tag
+		.-Para poder eliminar algún tag que hayamos creado utilizaremos el siguiente comando:
+		git tag -d [nombre_tag_a_eliminar]
+		.-Como crear tags con anotaciones:
+		git tag -a v1.0.0 -m "Versión 1.0.0"
+		.-Ahora si ejecutamos el comando para ver los tags de nuestro repositorio, solo mostrará la parte de v1.0.0
+		.-Si hacemos ahor aun GIT lg (alias de GIT log), observaremos que si que aparece el tag al lado del nombre de la rama en la terminal
+		.-Como poner un tag a un commmit anterior:
+		git tag -a v0.1.0 [has_corto_del_commit] -m "[mensaje del tag]"
+		.-Para comprobar el mensaje de un tag ejecutaremos el siguiente comando:
+		git show [nombre_del_tag]
+
+Sección 5 
+	Intorducción a la sección stash
+
+	Rebase
+	.-Nos ayudará a rehacer cosas que hicimos con anterioridad, sin afectar mucho en la línea del tiempo
+
+	Stash
+	.-Es una especie de almacén donde podremos guardar los cambios generados en nuestros ficheros, sin necesidad de realizar ningún commit. Esto cambios podremos recuperarlos más adelante en el tiempo y deguir trabajando con ellos.
+	.-Podemos utilizar esta característica de GIT con el siguiente comando:
+	git stash
+	.-GIT nos mostrará un mensaje diciendo work in progres(WIP), el hash del útimo commit y el nombre de la rama.
+	.-Si queremos mostrar todos los work in progres(WIP) de los que disponemos en nuestro repositorio utilizaremos el siguiente comando:
+	git stash list
+	.-Podemos tener los stash que nosotros necesitemos, pero las buenas prácticas indican que se deberían de borrar una vez que retomemos el código que contiene ese stash.
+	.-Para recuperar todos los cambios que habíamos introducido en el stash:
+	git stash pop
+	.-Con este comando recuperaremos el contenido del stash y eliminaremos este mismo del repositorio, hay que remarcar que solo obtendremos la información del último stash que hayamos creado.
+
+	Conflictos con el stash
+	Se pueden dar conflictos igual que al mergear ramas, cuando intentamos recuperar un stash. La manera de solucionar estso conflictos es igual a la de solucionar los conflictos en un merge. Abriremos los ficheros donde están los conflictos, modificaremos a mano y dejaremos el código que más nos interese. Luego haremos un commit. Si lo hacemos de esta manera, el stash aún existirá en nuestro repositorio.
+	Para eliminar un stash que aún perdura dentro de nuestro repositorio utilizaremos el siguient comando:
+	git stash drop
+	D esta manera solo se borrará el último stash de nuestro repositorio.
+
+	Más información del stash
+	.-El comando git stash, es igual a git stash save
+	git stash == git stash save
+	.-Para recuperar el último stash, ejecutaremos el siguiente comando:
+	git stash apply
+	.-Si tenemos más de una entrada en el stash, podemos ver todo el listado con el siguiente comando:
+	git stash list
+	.-Para recuperar el contenido de un stash en particular desde el listado de stash, ejecutaremos el siguiente comando:
+	git stash apply stash@{1}
+	.-Cuando tenemos algún conflicto al restaurar el stash, una vez solucionados estos, no se elimina el stash. Continua existiendo hasta que ejecutemos el siguiente comando:
+	git stash drop
+	-Si queremos eliminar algún stash en particular deberemos de ejecutar el siguiente comando:
+	git stash drop stash@{2}
+	.-Para guardar todos los ficheros menos los archivos que estan en el stage, ejecutaremos el siguiente comando:
+	git stash save --keep-index
+	.-Para incluir todos los archivos, junto  a los que git no le da seguimiento, ejecutaremos el siguiente comando:
+	git stash save --include-untracked
+	.-Si queremos ver cuales son los cambios que contiene un stash en la terminal, ejecutaremos el siguient comando:
+	git show stash
+	.-De esta manera solo mostrará el contenido del último stash, si queremos mostrar el contenido de cualquier stash que tengamos en nuestroi repositorio, ejecutaremos el siguiente comadndo:
+	git show stash@{1} 
+	.-Para guardar un mensjae en un stash, ejecutaremos el siguiente comando:
+	git stash save "mensaje"
+	.-Para borrar todas las entradas del stash, ejecutaremos el siguiente comando:
+	git stash clear
+
+	Introducción al GIT rebase
+	.-Sirve para agregar una rama al final de los commits de otra rama.
+	Ejemplo; si tenemos la rama master y otra rama. En el master hemos creado dos commits más que no existen en la otra rama, podemos hacer un rebase de master a la rama para que estos commits existan en la rama que no es la master.
+	Se utiliza el rebase para no tener conflictos en los merges.
+	Rebase interactivo
+	git rebase -i HEAD~3
+	De esta manera moveremos le Head tres commits antes, ¿pero para que nos servirá?
+		.-Ordenar commits
+		.-Corregir mensajes de los commits
+		.-Unir commits
+		.-Separar commits
+
+	Rebase squash
+	.-Sirve para unir dos commits, debemos ejecutar el siguient comando:
+	git rebase -i HEAD~4
+	.-Lo que hará sera agrupar los últimos 4 commits en uno solo, acto seguido de ejecutar el comando, nos aparecerá un texto donde se nos mostrarán los últimos 4 commits (que se lo hemos indicado mediante el comando) y deberemos modificar y poner una 's' o un 'squash' delante de los commits que deseamos unir, hay que recordar que esto unirá el commit donde se encuentre el 's' o 'squash' y el commit anterior. A continuación nos mostrará otro texto que es donde incluiremos la información del commit.
+	.-Por mucho que incluyamos commits, solo se fusionarán los que le indiquemos nostros mediante el signo 's' o 'squash' en la ventana del texto uan vez ahayamos ejecutado el comando, este fichero hay que modificarlo a mano.
+
+	VOLVER A REPETIR O ver el video de nuevo
+
+	Rebase Reword
+	Sirve para acortar el mensaje del commit, pero esta vez con el rebase, para ello utilizaremos el siguiente comando
+	git rebase -i HEAD~1
+	A continuación podremos introducir información en el fichero que se nos ha abierto enl a terminal, eliminaremos el pick y pondremos 'reword'  o 'r' al principio de la primera linea, esto sera un poco como en el merge squash, son los comandos que se van a ejecutar, luego de configuraer estos parametros, nos aparecerá otra ventana en la terminal donde ya podremos editar el mensaje del commit.
+
+	Rebase edit
+	Para devolver un fichero a su estado de origen o último commit, ejecutaremos el siguiente comando:
+	git checkout -- [nombre de archivo]
+	Si hemos modificado dos ficheros, los incluimos en el mismo commit, pero luego nos damos cuenta de que no lo queremos así, sino que queremos incluir la modificación de cada fichero en un commit diferente ejecutaremos lo siguiente:
+	git rebasse -i HEAD~2
+	Con esto le estamos diciendo que haga un rebase de muestre los dos ultimos commits, en el último esta incluido los cambios en los dos ficheros. Al ejecutarlo nos aparecerá en modo edición el fichero configuracion interacivo de rebase. En este caso hay que modificar la palabra pick del commit que nosotros queremos modificar, en ultimo en este caso y poner una 'e' o un 'edit'.
+	Luego nos aparecerá uns mensajes que nos indica que, podemos continuar editando con el ammend o que si hemos acabado la edicion del rebase ejecutemos el continue. Ahora ejecutamos git reset HEAD^ para volver un paso atras e ir incluyendo los ficheros uno a uno en cada commit, con git add [nombre del fichero], git commit -m "mensaje del commit", etc, asi con los dos ficheros, ahora solo queda ejecutar el git rebase --continue
+
+	Seccion 6 
+	Push -> Subir los cambios realizados en nuestro odenador y subirlos al servidor
+	Pull -> Para descargarse estos últimos cambio
+	Git no maneja el acceso al repositorio
+	Git es la tecnología y github es donde se almacena el poryecto
+
+	Para comprobar nuestros remotes, ejecutaremos el siguiente comando:	
+	git remote -v
+
+	Para subir nuestros cambios, commits y demás a un servidor:
+		git push -u origin master
+			-u ; para que la siguiente vez no tengamos que especificarle el nombre de la rama
+			origin ; para indicarle que es en el origin
+			master ; es el nombre de la rama que queremos subir
+		Cuando hacemos un git push, por defecto no sube los tags, esto se debe de hacer manualmente, uno por uno o todos a la vez, para ello utilizaremos el siguient comando 
+		git push --tags
+
+		gt pull para descargar los cambios si los hay.
+
+	Clonar un repositorio
+		git clone [url del repositorio]
+		Si queremos modificar el nombre del repositorio deberemos de ejecutar el siguiente comando.
+		git clone [url del repositorio] [nombre nuevo de la carpeta]
+
+	Git fetch VS git pull
+		git pull hace un merge de forma automática, por contra el git fetch no lo hace.
+		Hacer un fetch o un pull antes de hacer un push es una de las buenas prácticas
+
+	Markdown y GITHUB markdown
+		Es un poco como el lenguaje de marcas o HTML
+		# h1
+		## h2
+		### h3
+		#### h4
+		##### h5
+
+		Para poner las letras en cursiva utilizaremos el asterisco al principio y al final de la palabra o del texto que queremos poner de esa manera
+		ejemplo:
+			Un gran poder requiere una gran *responsabilidad*
+		También sirve con guines bajos, ejemplo:
+			Un gran poder requiere _una_ gran responsabilidad
+		Para poner texto en negrita utilzaremos dobles asteriscos
+			Un **gran poder** requiere una gran repsonsabilidad
+		Si queremos emplear el carácter de una cita "" utilizaremos el signo > al principio del texto
+		Si queremos crear listas ordenadas hacemos lo siguiente:
+			1. item
+			2. item
+			3. item
+				*. subitem
+				*. subitem
+				*. subitem
+		También podemos crear listas sin ordenar con los asteriscos
+
+		Para poner imágenes en el README utilzaremos lo siguiente:
+		![Batman](url de la imagen)
+			| 					|
+		Es como el alt del href | 
+								|->Esto es la url de la imagen
+
+		
+		Para crear un enlace:[texto del enlace](url de la imagen)
+		webs donde aprender markdown;
+			->https://www.markdowntutorial.com/
+			->https://guides.github.com/pdfs/markdown-cheatsheet-online.pdf
+
+		Emojis para github
+			->https://www.webfx.com/tools/emoji-cheat-sheet/
+
+
+	Pull request
+		Es una solicitud antes de afectar ningun fichero de alguna rama
+
+
+	Fork clonar y colaboraciones
+
+	Si queremos volver al pasado epro solo un fichero podemos utilizar lo siguiente:
+	git lg o git log para saber los commits que se han hecho en el repositorio, y luego ejecutar lo siguiente:
+	git checkout [hash_del_commit] [nombre_de_fichero]
+	De esta manera solo devolveremos a un estado anterior el fichero que hemos indicado en el comando 
+
+	Si hacemos un pull queste de una rama y modificamos, con un push bastara para que se actualice, no hace falta mandar otro pull request, el mismo se actualiza con los cmabios incluidos en el commit.
+
+	Actualizando nuestro FORK
+	Es cuando alguien nuevo entra en el equipo de programación y aún no nos fiamos de el y le indicamos que haga un FORK del proyecto en vez de un git clone.
+	Además de hacer un FORK cada uno (si son más de un programador que se han incluido en el nuevo equipo de desarollo), deben de hacer un clone del mismo repositorio en sus máquinas locales.
+	Si en este momento, los nuevos desarrolladores del aquipo hacen push en este repositorio deberían de hacer un "PULL REQUEST", para poder actualizar el repositorio original con sus cambios.
+	Ahora se trataría de traer a nuestro repositorio los cambios que ha realizado el otro desarrollador (ejemplos de batman y robin).
+	Para ello debemos de incluir el siguiente comando:
+	
+		git remote add upstream [dirección del repositorio]
+
+	Con esto lo que podemos hacer es un fetch del repositorio original, pero no un push de manera directa.
+	Ahora para actualizar el repositorio local con los cambios del repositorio original (del cual hemos hecho un fork) deberemos de ejecutar el siguiente comando:
+
+		git pull upstream master => master es el nombre de la rama 
+	
+	Ahora para que se actualice el repositorio original en github (de nuestro clone), debemos de ejecutar el siguiente comando:
+		git push
+
+
+
+	Introducción a los flujos de trabajo
+	Se trata de "maneras de trabajar", cuando en un equipo de desarrollo hay más de un programador.
+	Si se hace un pull reques, el resto del equipo de desarrollo queda advertido de los cambios que se han realziado por los demas desarrolladores, y por lo tanto tomar decisiones de si se incluyen estos cambios en la rama master o no.
+
+
+	--Cuando debemos de crear un TAG--
+		->Cada vez que hacemos un push a producción
+	Para subir los tags a github utilizaremos el siguiente comando:
+
+		git push --tags 
+
+	De esta manera subiremos todos los tags de una vez al repositorio remoto.
+	La ventaja de los tags, es que podemos descargarnos nuestro proyecto de la misma manera que se encontraba en el momento en que creamos dicho tag.
+	La nomenclatura de los tags es la siguiente
+		v1.0.0
+		[major number][menor number][parche]
+
+	Diferencia entre tags y releases:
+		Los releases o pre-releases son estados de nuestro proyecto en los que además de un tag podemos incluirle más información como por ejemplo una descripción, manual de instalación, imágenes, etc.
+		Primero se crea un pre-release y luego un release 'completo'.
+
+	Issues, ¿Qué son? (de github)
+		Es como un issue del JIRA, comentarios, notificaciones a los colaboradores del proyecto, etc.
+		Estas issues se pueden cerrar, pero aún los mensajes continuarian llegando a los correos, para que esto no suceda, deberemos de pulsar sobre el botón de 'lock conversation'.
+
+	Labels o etiquetas
+		Sirve para mejorar la administración de las issues.
+		Estos son completamente perosnalizables, podemos crear tantos como queramos, del color que queramos y con el mensaje más adecuado. Con estos labels podremos filtrar las issues por el contenido de los mismos labels.
+
+	Milestones
+		Son un grupo de issues. Cuando creamos una issues, la podemos integrar dentro de un mailstone. De esta manera podemos tener todo más organizado, además nos muestra la barra de progreso de las issues que se van cerrando dentro de este mailstone.
+		Esto de los milestones, sirve para los encargados del proyecto esén actualizados de el estado del proyecto (en el video hace referencia a la fecha del lanzamiento de una beta, cuando la barra de progreso de ese mailstone llega al 100%, el proyecto está listo para lanzarse)
+
+	Colaboradores de un proyecto
+		.-Como agregar colaboradores a un repositorio
+		Buscamos su nombre de git, o su correo, etc y le enviamos una invitación a nuestro proeycto. En el momento que el colaborador acepte la invitación al repositorio, tendrá control total sobre el mismo y podra crear/borrar ramas, etc, MUCHO CUIDADO CON ESTO.
+
+	Como asociar un commit a un issue en particular.
+		Todas las issues que creamos dentro de nuestro proyecto tienen un numeral, ejemplo #8, si queremos hacer referencia a esta issue en un commit, solo debemos de escribit en el mensaje del commit, este numeral.
+
+
+	Wikis
+		Las wikis son páginas donde podemos introducir información relacionada con el proyecto, como por ejemplo las instrucciones de instalación del proyecto, etc. Hay que tener en cuenta que, cada página que vayamos a crear, generará una URL, esta es pública y todo el que pueda acceder a ella, puede modificar la información de la misma, sino queremos que esto ocurre deberemos desactivar esta opción dentro de los settings de la misma wiki y activar la opción de "Restingir solo la edición a los colaboradores del proyecto".
+		Podemos relacionar páginas a través de links, de una wiki a otra, pero debe de llamarse igual que la página a la cual queremos redireccionar a la persona que ha pulsado sobre el enlace (esto se hace a través del 'ckeditor' de la wiki, el del enlace).
+
+	Projects
+		Hay que pensar en ellos como una gran pizarra, donde podemos asignar tareas o issues a los colaboradores de nuestro proyecto.
+		Es muy parecido al trello.
+		Todas las notas que creamos dentro del project se pueden transformar en issues.
+		El contenido de las notas es sensible a mark down (.md)
+
+	Github pages
+		Sirve para almacenar contenido html, css, js y hacerlo servir como una página web propia.
+		Su particularidad, es, que se debe de llamar igual que nuestro usuario de github (hay que crear un nuevo repositorio). 
+		Por ejemplo:
+			-> StriderX2/striderX2.github.io
+		Sólo podremos tener un repositorio de este tipo.
+		Podemos utilizar themas predefinidos dentro de las opciones de Github-Pages, esto nos generará ficheros de tipo .md, pero nosotros podemos eliminar estos y crear la estructura típica de contenido html, con ficheros css y js. Podemos crear carpetas,  para su correcta organización, etc.
+		Todos estos cambios realizados, puede ser que tarde un poco en quedar reflejados en nuestra página de git.
+		Todo esto de lass github-Pages podemos desarrollarlo en local, como un proyecto normal, pero para ver los cambios debemos de subirlo al repositorio en origin de github.
+		Si queremos crear una github page dentro de cualquier proyecto debemos de activar esta opción desde dentro de nuestro repositorio, en las opciones de github pages, entonces ya podremos introducir nuestros fichero de la página (html, css y js, además de la estructura de carpetas) dentro de una carpeta llamada /docs.
+		También está la opción de indicarle que coja la rama master como github page. Normalmente esta opción no es la que se utilza.
+
+	Pulse
+		Sire para poder ver toda la información posible de nuestro repositorio en un periodo de tiempo. Podemos ver los commits, que ha hecho cada desarrollador, las pull request, cuantos commits ha hecho cada desarrollador, etc.
+
+	Graphs
+		Muestra gráficos, es como la opcion del pulse
+
+	Organizaciones.
+		Una organización sirve para agrupar a usuarios de git
+		El nombre de este organización ha de ser único, ya que tendrá también su URL independiente.
+		Las organizaciones pueden ser gratuitas, pero esta información será pública.
+		Cuando creamos una organización, el primer paso es introducir la información de la misma, nombre y correo, en el segundo paso es donde invitaremos a los demás usuarios de git a esta organización.
+		Si queremos transferir un repositorio a una organización, deberemos de entrar en el settings de nuestro repo e ir hasta la "zona peligrosa" y seleccionar la opción de "Transfer ownership". Esta opción sirve para transferir  repositorios a otros usuarios de git o a una organización. 
+		Si hacemos esto, dicho repositorio pasará a ser propiedad de la organización, nosotros deberemos de hacer un fork para tenerlo.
+
+		Equipos de trabajo
+
+			Esta opción está dentro de el apartado de Organizaciones. Por defecto, la persona que crea este equipo, queda asignada como administradora del mismo equipo. Podemos ir agregando usuarios de github a nuestro team, desde el botón "Add member". EL nuevo usuario no hace falta qu esté dentro de la organización. Podemos decir que este equipo tiene un equipo padre, por ejemplo.
+			Los repositorios han de asignarse a los teams, de no ser así, no pueden hacer nada. Una vez que agregamos el repositorio al nuevo team, este team tendrá por defecto el permiso de READ. Si queremos modificar esta información lo haremos desde el settings de nuestro TEAM.
+			Hay tres permisos:
+				.-READ -> Los usuarios de este TEAM podran hacer fork, pull request, etc.
+				.-WRITE -> Podrán leer, clonar y hacer push directamente sobre el repositorio.
+				.-ADMIN -> A parte de los permisos anteriores, podrán introducir nuevos ususarios de 			GIT a este team.
+
+
+	Ajustes de seguridad
+
+		Ajustes de las organizaciones
+
+			En el settings de la organización podemos introducir información sobre esta.
+			En la sección de privilegios es donde podemos modificar las opciones para que los miembros puedan crear o no nuevos repositorios, además de poder borrarlos etc. También podremos indicar las opcioner por defecto cuando creamos nuevos usuraios dentro de la organización, por defecto está el valor README.
+
+		Ajustes de seguridad de un usuario
+
+			Autenticación por doble factor
+				Se configura en el apartado de SETTINGS de nuestro ususario, en la parte de SECURITY.
+				Sirve para poner un paso más a la hora de autenticarse para trabajar con nuestro repositorio. Se puede hacer a través de una app (scanner de códigos QR) o a través de un SMS.
+
+			Tokens de acceso personal.
+				Pueden reemplazar contraseñas, etc. Cuando creamos un TOKEN, podemos darle permisos, lo ideal es crearlo lo más restrictivo posible.
+
+			Generar claves SSH
+
+				Una vez generada la clave ssh la iintroduciremos dentro del apartado de SETTINGS de nuestro perfil, iremos a "SSH and GPG keys", nueva clave SSH, pondremos un título para la clave y la misma clave que hemos generado anteriomente.
+				Para comprobar que hemos creado bien nuestra clave SSH y la hemos introducido bien en los SETTINGS de GITHUB, escribiremos los siguiente en una terminal:
+
+					ssh -T git@github.com
+
+				Si todo ha salido bien nos mostrará información indicando que se ha agregado el host al repositorio. A partir de ahora ya podemos crear nuevos clones de nuestros repositorios de manera SSH.
+
+
+		GIST
+
+			Se trata de minirepositorios, que contienen uno o dos archivos únicamente. Existen de tipos de GUIST, los que se indexan (públicos) o los que no se indexan (privados). La diferencia entre uno y otro es que se pudene encontrar mendiante el buscador de GITHUB.
+			Si crearamos ficheros con funcionalidade JS, podríamos utilizar la URL del mismo GIST, como si se tratara de un CDN e importarlo a nuestro proyecto.
+			Podemos utilizar estos GIST que hemos creado en nuestrod IDES, a través de diferenetes plugins, en el curso de ha mostrado como realizarlo con ATOM. Hayq ue crear un ACCESS TOKEN desde nuestro usuario de GITHUB e introducirlo en las opciones del plugin de GISTY de ATOM. Luego podremos buscarlos y al seleccionarlos, el código quedaraá plasmado en el fichero donde estemos trabajando.
+			Estos GIST también de pueden hacer FORKS, como si de un repositorio normal se tratara.
+			
+
+
+
+
+
+
+
+
+
+
+
+

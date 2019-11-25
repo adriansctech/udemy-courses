@@ -1,0 +1,704 @@
+Curso de Docker UDEMY
+IMAGENES en docker:
+.-Que es una imagen de docker;
+	En una imagen configuras todo el software, todas las librerias y demás cosas que necesita la aplicación.
+	Paquetes, configuración, etc.
+	.-Contiene determinado número de capas:
+		CAPA 1:
+			La primera capa contiene un FROM:
+				.-Significa que SO se va a utilizar (es un mini sistema operativo, su pero no será mayor a 100MB)
+		CAPA 2:
+			Contiene la orden RUN:
+				.-Significa que va a ir luego del SO (servicios como apache, mysql, etc)
+		CAPA 3:
+			Contiene la orden CMD:
+				.-Aquí deberiamos de ejecutar el comando para levantar los servicios que hemos instalado en la capa 2
+				.-Es importante que los servicios que se ejecuten sea en primer plano, en el momento en que este proceso muera, el contenedor se detendrá.
+		Estas capas son de solo lectura
+		Estas capas se crean dentro de un fichero llamado dockerfile
+
+CONTENEDORES en docker:
+	Es una capa que ejecutará las capas enteriores
+	Esta capa si que es de escritura
+	En esta capa podremos acceder a las propiedades de las capas enteriores, podremos cambiar su configuración, pero esta será de forma temporal.
+	No es recomendable configurar cosas en esta capa dado que es temporal
+	Los contenedores continen:
+		Las imágenes
+		Los volúmenes
+		Redes
+
+En que se diferencia un contenedor de una máquina virtual
+	Un contenedor no es más que un proceso más dentro de un SO, por lo tanto utilizará una mínima cantidad de RAM para su ejecución
+
+Imágenes:
+	.-Con el comando 'docker images' obtenemos un listado de las imágenes que tenemos en nuestro SO
+	Imágenes oficiales:
+		.-Si queremos bajarnos alguna version en concreto de una imagen oficial, debemos  de utilizar los tags que ns proporcionan en dockerhub:
+
+			'docker pull mongo:3.6.5-jessie' => docker pull mongo:tag-version
+
+		Si no especificamos ningún tag, se descargará la última versión que exista en dockerhub
+
+	-----------------------------------
+	.-Como crear imágenes propias
+	-----------------------------------
+	Debemos crear un fichero 'Dockerfile' con nuestras capas personalizadas
+	A continuación deberemos de contruir nuestra imagen a partir del fichero Dockerfile con el siguiente comando:
+
+		'docker build --tag [tag-personalizado] .'
+			->El nombre del tag es a nuestra eleción.
+			->El '.' sirve para indicar que utilice el fichero Dockerfile que se encuentra en el directorio donde nos encontramos
+			->En el Dockerfile hay que indicarle en la capa de 'RUN', que instale todos los paquetes de manera automática, si llega a un punto la instalación que nos pide yes/no, el proceso terminará
+			->Al construir una imagen de esta manera, docker le pone de manera automática el tag 'latest', si queremos especificarle nosotros algún tag deberemos de utilizar el siguiente comando:
+
+		'docker build --tag apache-centos:primera .'
+
+	------------------------------------------------
+	.-Crear un contenedor para las imágenes propias 
+	------------------------------------------------
+	Si ejecutamos nuestra imagen personalizada, este proceso morrá debido a que no hemos creado la capa lamada 'CMD'
+	Para ejecutar una imagen ejecutaremos el siguiente comando:
+
+		'docker run -d [nombre-imagen]'
+
+	Si queremos incluir un nombre a nuestro docker cuando lo ejecutamos utilizaremos el siguiente comando:
+
+		'docker run --name [nombre-docker] -d [nombre-imagen]'
+	
+	Si queremos indicarle los puertos deberemos de utilizar el siguiente comando
+		'docker run --name [nombre-docker] -p 80:80 -d [nombre-imagen]'
+
+-------------------
+	DOCKERFILE
+-------------------
+	.-FROM/RUN/COPY/ADD
+		.-FROM -> el sistema operativo desde el cual partimos
+		.-RUN -> los servicios que podemos ejecutar a través de la línnea de comandos
+		.-COPY -> sirve para copiar ficheros que existen en el mismo directorio donde se encuentra el fichero 'Dockerfile', se debe de incluir el nombre del fichero o carpeta y la ruta donde queremos que se copie dentro de la imagen del SO, por ejemplo:
+
+			'COPY bootstrap /var/www/html'
+
+		.-ADD -> sirve para agregar ficheros dentro, se pueden agregar urls de ficheros que existan en internet como fuente de información. Se decargará el fichero en la ruta que le indiquemos, como con el comando 'COPY'
+		.-ENV -> sirve para agregar variables de entorno
+		.-WORKDIR -> indica donde se está trabajando actualmente. Sirve de apoyo para COPY/ADD, asi nos podemos mover dentro de las carpetas de la capa del SO
+		.-EXPOSE -> le indicamos que exponga un puerto determinado,si está utilizando APACHE podemos indicarle que utilice otro que no sea el de por defecto (80). Si estas son nuestras necesidades, deberiamos de modificar también los ficheros de apache para que respondan en ese puerto en concreto.
+		.-LABEL -> no es más que una etiqueta, normalmente va al inicio de la imagen. Funciona clave=valor. Se puede tener más de una etiqueta LABEL por cada imagen. Sirve a modo de metadatos de la misma imagen. Si se incluyen espacios entre los valores, se debe de incluir comillas.
+			LABEL description="Esto es la descripcion"
+		.-USER -> indica el usuario que esta ejecutando la tarea en ese momento, por defecto es el usuario ROOT. Debe de ser un usuario que exista en el SO. Si un usuario no existe y queremos agegarlo al SO podemos crearlo mediante la siguiente orden:
+
+			'RUN useradd adrian'
+			'USER adrian'
+
+		A partir de la línea de donde se encuentra USER hacia abajo lo ejecutaré en este caso el usuario adrian. SI se han de modificar algunos fichero desepues de esta línea deberemos de tener en cuenta los permisos de este usuario hacia esos ficheros o carpetas, a lo mejor hay que modificarlos para que este usuario recien creado pueda manipularlos.
+		.-VOLUMES -> sirve para hacer que las carpetas persistan despues de que apaguemos nuestro contenedor.
+		.-CMD -> es lo que mantiene vivo el contendor, pero también puede ser un script. Para realizar lo comentado, primero deberemos de copiar el fichero sh dentro de la imagen y luego ejecutarlo.
+
+			'COPY run.sh /run.sh'
+			'CMD run.sh'
+*****
+	Siempre que agregemos o modifiquemos alguna de estas directivas deberemos generar otra vez el contenedor con build
+*****
+		.-DOCKERIGNORE -> sirve a modo de fichero .gitignore, para ignorar ficheros que nosotros no queramos incluir, se trata de un fichero a parte llamado '.dockerignore'
+
+
+Buenas prácticas para crear un dockerfile
+	.-Un solo servicio instalado por imagen
+	.-Incluir los ficheros que no queremos dentro de la imagen, en el fichero .dickerignore
+	.-Crear imagenes con pocas capas,para que sea una imagen liviana
+	.-Si los argumentos son muy largos podemos utilizar '\' y continuar en la línea de abajo para crear un fichero más legible
+	.-Incluir varios argumentos en una misma capa, en vez de utilizar una capa por argumento
+	.-No instalar paquetes innecesarios
+	.-Utilzar LABEL para aplicar metadatas a las imágenes
+	.-Hay que crear el fichero Dockerfile de la manera má legible posible y organizada
+	.-Si existe algún parámetro que se repite mucho podemos crear una variable de entorno para optimizar el fichero y no repetirlo tantas veces
+	.-La filosifía de docker es un servicio por contendor, no es correcto que coexistan apahe y mysql en el mismo contenedor por ejemplo, para esto deberemos crear un contenedor para cada servicio
+
+Creando un contenedor con certificato https
+	Para ello debemos de crear el certificado y copiarlo mediante el uso de una capa dentro del Dockerfile
+
+Como eliminar imágenes
+	.-Para mostrar el listado de imágenes disponibles en nuestro pc:
+
+		'docker images'
+
+		Si queremos filtrar el resultado por el nombre:
+
+		'docker images | grep php'
+
+	.-Para eliminar una o varias imágenes de docker
+
+		'docker rmi [nombre-imagen:tag]'
+		'docker rmi [id-imagen]'
+
+		Podemos eliminar varias imágenes con una sola instrucción:
+
+		'docker rmi [nombre-imagen:tag] [nombre-imagen:tag] [nombre-imagen:tag]'
+
+Cambiar de nombre a un fichero Dockerfile
+	Es posible crear un contenedor a partir de un fichero que no se llame Dockerfile, para ello ejecutaremos el siguiente comando:
+
+		'docker build -t [image-name] -f [docker-filename] .'
+
+		->Recordemos que el '.' del final hace referencia a la ruta donde se encuentra el fichero, en este caso ha de estar en el mismo directorio donde vamos a ejecutar el comando
+
+Dangling images
+	.-Son imagenes que no tienen ni nombre ni tag, pero si un ID
+	.-Se trata de imégenes huerfanas, imágenes sin referenciar
+	.-Son imágenes con un mismo tag, que en este caso si no lo especificamos, docker por defecto le pone lastest
+	.-Esto tiene qu ver con el sistema de permisos de las capas de docker, al ser solo de escritura, si modificamos alguna capa y luego creamos la imagen, docker entiende que es una imagen nueva y si no incluimos un tag al crear esta imagen, la tratará como una imagen nueva con el mismo tag y dejará a la imagen anterior como huerfana o no referenciada
+	.-Esto se puede solucionar incluyendole un tag distinto a la misma imagen (hay que tener en cuenta que esto sucede cuando creamos imágenes con el mismo nombre)
+	.-Si creamos una imagen con el tag v1 por ejemplo, modificamos el contenido del Dockerfile y volvemos a contruir la imagen con el mismo tag, ocurrirá lo mismo, se creará una nueva imagen y la anterior quedará huérfana
+	.-Estas imágenes huérfanas se deberían de eliminar, docker no lo hace por defecto
+	.-Para eliminar dichas imágenes realizaremos los siguientes pasos:
+
+		'docker images -f dangling=true'
+			-> Este comando nos mostrará un listado filtrado de imágenes huerfanas
+
+		'docker images -f dangling=true -q'
+			->Este comando mostrará solo los ids de las imágenes huerfanas
+
+		'docker images -f dangling=true -q |xargs docker rmi'
+			->Este comando eliminará todas las imágenes huérfanas
+
+MultiStageBuild
+	Se puede utlizar los argumentos FROM tantas veces como necesitemos con el fin de obtener una imagen más liviana, podemos utilizar el primer FROM, ejecutar alguna acción con RUN o CMD y luego utilizar otro FROM y más clausualas RUN o CMD que se ejecutarán en este último FROM. Docker al generar la imagen omitirá el primer FROM, es decir, siempre va a perdurar el último FROM de nuestro Dockerfile
+
+
+Docker Contenedores
+	.-Son una instancia en ejecución de una imagen
+	.-Son temporales, si queremos que un cambio perdure en el tiempo, deberemos de incluir lo que necesitemos dentro del fichero Dockerfile
+	.-Se pueden crear muchos contenedores a partir de una misma imagen
+	.-Para mostrar un listado de los contendores utilizaremos el siguiente comando:
+
+		'docker ps -a'
+
+	.-Para ejecutar un contenedor en segudno plano utilizaremos el siguiente comando:
+
+		'docker run -d [nombre-de-la-imagen]'
+
+	.-Podemos observar que al listar los contenedores se mouestra una columna con los puertos que se abren cuando se ejecuta un contendor, estos han de estar mapeados, sino no podremos acceder a la instancia, es decir, no tendremos acceso al docker que estamos ejecutando. 
+		.-Ejemplo, instanciamos una imagen de Jenkyns, observamos mediante 'docker ps' que este necesita de los puertos 8080/tcp, entonces para poder acceeder a el docker de jenkyns deberemos de mapear este puerto con el siguiente comando:
+
+		'docker run -p 8080:8080 jenkyns'
+			->[puerto-máquina:puerto-contenedor]
+
+	.-Podemos ejecutar tantos contenedores a partir de la misma máquina como necesitemos, por ejemplo
+
+		'docker run -p jenkyns'
+		'docker run -p 8080:8080 jenkyns'
+		'docker run -p 9090:8080 jenkyns'
+
+		->Ahora tendríamos 3 contenedores ejecutando la misma imagen de jenkyns, a la cual podríamos acceder desde los direferenites puertos de nuestra máquina
+
+	.-Para eliminar un contendor utiliaremos el siguiente comando
+
+		'docker rm -f [nombre-contenedor]'
+
+		->Podemos eliminar varios contenedores con el mismo comando
+			'docker rm -f [nombre-contenedor] [nombre-contenedor] [nombre-contenedor] ...'
+
+	.-Como renombrar un contendor:
+		->'docker rename [nombre-antiguo] [nombre-imagen]'
+
+	.-Detener run contendor:
+		->'docker stop [nombre-contendor]'
+		->'docker stop [id-contenedor]'
+
+	.-Iniciar un contendor:
+		->'docker start [nombre-contendor]'
+		->'docker start [id-contendor]'
+
+	.-Reiniciar un contenedor:
+		-> El funcionaiento es similar al ejecutar primero 'docker stop' y luego 'docker start'
+		->'docker restart [nombre-contendor]'
+		->'docker restart [id-contendor]'
+
+	.-Como ejecutar comandos dentro de un contenedor:
+		->Al ejecutar un contendor, el resultado que obtenemos es un 'mini-sistema operativo' y con ello podremos ejecutar comandos dentro de este mismo, para acceder a una terminal de este contendor podemos hacerlo mediante el siguiente comando:
+
+			->'docker exec -ti [nombre-contendor] bash'
+				->'ti' ->quiere decir terminal interactivo
+				->'bash' ->para que nos de una terminal de bash
+
+			->Ahora podemos observar que la terminal nos muestra el nombre del usuario y el id del contendor, cono hostaname
+			->El usuario por defecto será el definido dentro del dockerfile
+
+			->Si queremos ingresar en la terminal con el usuario root por ejemplo:
+			->'docker exec -u root -ti [nombre-contendor] bash'
+
+			->Para salir de la terminal que acabamos de ejecutar utilizaremos el siguiente comando 
+			->'exit'
+
+		->Al ejecutar comandos dentro del contenedor , como entrar y salir con determinado usuario, no afecta en nada el funcionamiento del mismo contenedor, es decir el servicio que este funcionando lo hará con total normalidad
+
+
+
+Variables de entorno
+	.->Es una variable a la cual podremos acceder desde cualquier lugar del contenedor
+
+	.-Como definir variables de entorno:
+		->Dentro del fichero de Dockerfile
+			->La manera de declarar una variable es la siguiente:
+				
+				ENV prueba 1234
+				ENV [clave] [valor]
+
+				->Para poder comprobar que esta variable está accesible dentro de nuestro docker podemos ingresar dentro del bash con 
+					
+					'docker exec -u root -ti [nombre-contendor] bash'
+
+				y ejecutar la siguiente linea
+
+					'echo prueba'
+						->Comprobaremos que imprime el valor '1234'
+
+
+	.-Como definir variables de entorno a través de comandos
+		->Para esto debemos incluir esta opción dentro del comando que utilizamos al ejecutar el contenedor
+
+			'docker run -dti -e "prueba= 4321" --name [nombre-contenedor] [nombre-imagen]'
+
+
+Contendor con MYSQL
+	->Puede dar el siguiente error
+		mysql not found
+		->es debido a que falta un cliente bmysql, uscar por internet la manera de instalar esote paquete dependiendo de el SO que tenemos en nuestro contenedor
+
+	->Si utilziamos la imagen oficial de MYSQL hay que prestar especial atención a la documentación oficial ya que en este caso hay que ejecutar el contendor incluyendo unas variables de entorno que hacen referencia a variables de contraseña del usuario ROOT 
+	->También hay que tener presenta al ejecutar este contenedor el maperar el puerto 3306 del contendor a algún puerto de nuestra máquina local
+
+-------
+	Tenemos la posibilidad de llegar a conectar con la base de datos sin necesidad de mapear el puerto por defecto
+
+		'docker inspect [nombre-contenedor]'
+			->Nos mostrará información referente a IPs, puertos abiertos, etc del contenedor, a continuación utilizamos esta información para acceder a MYSQL
+-------
+	
+	->Tenemos la posibilidad de crear una base de datos, ususario con sus respectivos passwords, cuando ejecutamos un contendor de MYSQL mediante el uso de variables de entorno ()
+
+
+Contenedor con MONGO
+	URL: https://hub.docker.com/_/mongo
+	->Para ejecutar esta imagen basta con ejecutar el siguiente comando
+
+		'docker run --name some-mongo -d mongo:tag'
+
+Para saber cuanta memoria está consumiendo los contenedores podemos comprobarlo a través del comando
+		
+	'docker stats [nombre-de-la-imagen o id-del-contenedor]'
+
+
+Administrar Usuarios
+
+	Los ususarios podemos crearlos dentro del fichero Dockerfile, como una capa más
+
+		'RUN useradd adri'
+		'USER adri'
+		->Ahora si entramos en la terminal de nuestro contendor observaremos que el ususario con el que estamos logueados es 'adri', esto es así debido a la última clausula que hemos indicado en la que hacemos referencia a 'USER adri' indicando que es con ese usuario con el que queremos estar por defecto dentro del bash
+		Si no hubieramos incluido la última linea (USER adri), ingresariamos por defecto en la terminal con el usuario root por defecto. Podemos modificar este comportamiento incluyendo un argumento cuando ejecutamos un contenedor (hay que recordar que es para ingresar en el bash del contenedor)
+
+			'docker exec -u [nombre-ususario] -ti [nombre-contenedor] bash'
+
+
+Limitar los recursos que consume un contenedor
+	
+	Docker por defecto utiliza todos los recursos de la máquina donde se está ejecutando
+	
+	Limitar el uso de MEMORIA
+		Podemos limitar el uso de memoria por ejemplo incluyendo un nuevo argumento cuando vamos a ejecutar un contendor
+
+		'docker run -d -m "500mb" --name [nombre-contenedor] [nombre-imagen]'
+		->Para comprobar que esto funciona de manera correcta y este contenedor solo dispone de esa cantidad de memoria para ejecutarse podemos ver la información en cuanto a consumo de recursos de un conetendor mediante el siguiente comando
+
+			'docker stats [nombre-contendor]'
+
+	Limitar el uso de CPU 
+		Docker al igual que con la memoria, hace un uso completo de la cpu si así hiciera falta
+
+			Podemos averiguar el número de cpus que tiene nuestra máquina 
+			'grep "model name" /proc/cpuinfo | wc -l'
+
+			Y para limitar el uso de las cpus de nuestro contenedor docker utilizaremos el siguiente comando 
+
+			'docker run -d -m "1gb" --cpuset-cpus 0-1 --name [nombre-contenedor] [nombre-imagen]'
+			->Hay que tener en cuanta que las cps del host las empieza a contar desde el 0
+			->Al limitar el uso de la cpu de nuetros contendor mediante el uso del argumanto --cpuset-cpus, si utilizamos el comando 'docker stats' no se visualizará el límita de cpus que puede utilizar nuestro contendor, como ocurría cuando limitabamos el uso de memoria
+
+
+Copiar archivos a un contenedor
+	Para esto disponemos de un comando
+		
+		'docker cp'
+		->Nos permita copiar ficheros desde nuestro host hasta el contenedor y al contrario
+
+		Para copiar ficheros de nuestra máquina al contendor
+			'docker cp [nombre-fichero]  [nombre-contenedor]/[ruta-dentro-del-contendor]'
+			->ejemplo:
+				
+				'docker cp index.html apache/temp'
+				->Esto copiará el fichero index.html del directorio donde nos encontremos, en la ruta /temp de nuestro contenedor
+
+		Para copiar ficheros del contenedor a nuestra máquina
+			'docker cp [nombre-contenedor]:/[ruta][nombre-fichero] [ruta-de-la-máquina]'
+			->ejemplo
+
+				'docker cp apache:/var/log/dpkg.log .'
+				->Esto nos copiará el fichero dpkg.log de nuestro contenedor en la ruta donde nos encontramos en este momento de nuestra máquina
+
+
+Como convertir un contenedor en una imagen
+	Hay veces que necesitamos crear una imagen de un conetendor en el cual hemos realziado modificaciones (para poder conservar estas), no es una buena prática, para esto se utilizan los volumenes, pero se puede hacer, para ello sirve el comando 'docker commit'
+
+	'docker commit [nombre-del-contenedor] [nombre-de-la-imagen-final]'
+	->El contenedor debe de estar funcionando
+	->Puede ser que el cmd se pierda y debamos de incluirlo a la hora de ejecutar el contenedor
+		'docker run -dit --name centos centos-resultante /bin/bash'
+	->Si creamos un volumen dentro de una imagen y creamos un commit de este contenedor, los ficheros existentes dentro de este volumen, al restablecer de nuevo esta imagen, no existirán
+
+
+Como sobreescribir el CMD de una imagen sin un Dockerfile
+	Todos los contenedores tiene un CMD, este lo podemos observar al ejecutar 'docker ps', pero podemos modificarlo, utilizando un último argumento cuando ejecutamos el comando 'docker run'
+
+	->Ejemplo
+		'docker run -d -p 808:8080 centos python -m SImpleHTTPServer 8080'
+		->Con esto, lo que conseguimos es que se ejecute dentro del contenedor un mini servicio http a través de python
+
+
+Como destruir contenedores automáticament
+	Para ello podemos utilizar un nuevo argumento
+		'docker run --rm ti centos bash'
+		->De esta manera al ejecutar este contenedor entraremos directamente en el bash, pero al salir del mismo, el contenedor se detendrá
+
+
+Cambiar el document root de Docker
+	Este fichero existe dentro de la ruta
+
+		'/var/lib/docker'
+		->Esto no tiene mucho interes
+
+Volúmenes
+	Nos permite almacenar datos de manera persistente en nuestra máquina local
+	Existen valúmenes de varios tipos:
+		.-Host
+		.-Anonymus
+		.-Named Volumes
+
+	.-Volúmenes de HOST
+		->En el ejemplo del video, se comprueba, en que directorio guarda mysql las bases de datos exportadas, y crea un volumen en el contenedor que hace referencia a una carpeta existente dentro de nuectro ordenador, con la siguiente instrucción
+
+			'docker run -d --name db -p 3306:3306 -e "MYSQL_ROOT_PASSWORD=12345678" -v [carpeta-ordenador]:[carpeta-contenedor] mysql:5.7'
+
+			'docker run -d --name db -p 3306:3306 -e "MYSQL_ROOT_PASSWORD=12345678" -v /opt/mysql/:/var/lib/mysql mysql:5.7'
+
+	.-Volúmenes anónimos
+		->Son volúmenes que guardan la información, pero en este caso no le indicamos la carpeta donde se guaradrá la información, será docker el que guarde la información en una carpeta al azar, podemos guiarnos en la ubicación de la carpeta a través de la información que se muestra al ejecutar el siguiente comando
+
+			'docker info |grep -i root'
+
+
+		->Se crean de la siguiente manera
+
+			'docker run -d --name db -p 3306:3306 -e "MYSQL_ROOT_PASSWORD=12345678" -v [carpeta-contenedor] mysql:5.7'		
+
+		->Podemos comprobar la linea que corresponde al mount (ruta donde se genera este volumen anónuimo) ejecutando el siguiente comando
+
+			'docker inspect [nombre-contenedor] | grep [nombre-carpeta]'
+
+		->Este tipo de contenedors tiene dos posibles problemas;
+			->El nombre de la carpeta, es muy raro, largo y difícil de memorizar
+			->Si eliminamos el contendor sin el parámetro -f, la carpeta continuará existiendo
+
+
+	.-Creando volúmenes dentro del fichero DockerFile
+		->Comandos para listar/eliminar los volumenes 
+			Si queremos comprobar si tenemos algún volúmen creado, lo podemos hacer mediante el siguiente comando
+
+				'docker volume ls'
+
+			Si queremos eliminar un contenedor y sus volúmenes ejecutaremos la siguiente instrucción
+
+				'docker rm -fv [nombre-contenedor]'
+
+			Si queremos conservar el volumen que hemos creado con nuersto contenedor omitiremos el parámetro v
+
+				'docker rm -f [nombre-contenedor]'
+
+		->Creando un volumen anónimo
+			Dentro del fichero Dockerfile incluiremos una nueva capa 
+
+			VOLUME /opt/
+			->Con esto lo que conseguimos es que toda la información que se guarde dentro de la carpeta /opt/ de nuestro contenedor, se guarde en una carpeta dentro de nuestra máquina
+
+		->Volúmenes nombrados
+			.-Es la unión de un volumen de host y un volumen anónimo
+			.-Crearemos volúmenes con la siguiente instrucción
+
+				'docker volume create [nombre-volumen]'
+				->Observaremos que se ha creado un volumen dentro de nuestro host, la ruta de la carpeta la encontraremos listando los volumenes existentes con 
+
+					'docker volumen ls'
+
+			.-A continuaciópn podremos utilizar este volumen con la siguiente instrucción 
+
+				'docker run -d --name db -p 3306:3306 -e "MYSQL_ROOT_PASSWORD=12345678" -v [nombre-volumen-creado]:[carpeta-contendor] mysql:5.7'
+				->Esta vez, solo deberemos de indicarle el nombre del volumen creado
+			.-Al crear un volumen de esta manera y tratamos de eliminarlo con el parámetro -fv, esta vez el volumen persistirá dentro de nuestro host
+
+
+		->Dangling Volumenes
+			->Se trata de la misma manera que el los contenedores 'dangling'
+			->Este caso se da, al eliminar contendores sin el parametro -fv, se elimina el contenedor, pero no sus volumenes
+			->Para poder eliminar estos volúmenes si así lo deseamos, relaizaremos los siguientes pasos:
+				.-Ejecutaremos el siguiente comando para listar los volúmenes que tenemos en nuestra máquina
+
+					'docker volume ls -f dangling=true -q | xargs docker volume rm'
+					->Con este comando obtenemos los ids de los volúmenes dangling y a continuación los eliminamos de nuestra máquina
+
+	Redes en Docker
+
+		.-Al instalar docker en nuestro ordenador se creará una nueva interfaz de red con su propia IP, esta interfaz se llamará
+
+			'docker0'
+			->podemos listar información de esta interfaz mediante el siguiente comando
+
+				'ip a | grep docker'
+				->Ahí veremos un ranbgo de ips, esto quiere decir que si ejecutamos un contenedor, docker a este contenedor le assignará una ip dentro de este rango de IPS.
+				->Esta información la podremos comprobar si ejecutamos el siguiente comando
+
+					'docker inspect [nombre-contenedor]'
+
+			->Se crea una subred llamada bridge, podemos ver toda la información referente a ella ejecutando el siguiente comando
+
+				'docker inspect bridge'
+
+			->Si ejecutamos un ping desde un contenedor a otro, recibiremos respuesta, ya que estan dentro de la misma red (bridge)
+
+		->Como crear una red definida por el usuario
+			.-Podemos crear una nueva red utilizando el siguiente comando
+
+				'docker network create [nombre-de-la-nueva-red]'
+				.-Ahora comprobaremos que esta nueva red existe mediante el siguiente comando 
+
+					'docker network ls'
+					.-Para listar todas las redes existentes
+					'docker network ls | grep [nombre-de-la-nueva-red]'
+					.-Para filtrar el listado por el nombre de la nueva red
+
+			.-Como asignar otros parámetros a la nueva red
+				'docker network create [nombre-de-la-nueva-red] -d bridge --subnet 127.124.10.0/24 --gateway 127.124.10.1 [nombre-de-la-nueva-red]'
+				.- '-d' ->Para indicarle el driver a utilizar, en esta caso será 'bridge' (el que utiliza docker por defecto)
+				.- '--subnet' ->Para indicarle una subred
+				.- '--gateway' ->Para indicarle la puerta de salida o gateway
+
+			.-Como inspeccionar redes en docker
+
+				'docker network inspect [nombre-de-la-red] | less'
+
+			.-Como agregar un contendor a una red distinta a la por defecto
+				.-Podemos hacerlo cuando creamos un contenedor nuevo de la siguiente manera
+					
+					'docker run --network [nombre-de-la-red] -d --name [nombre-del-contenedor] -ti centos'
+					.-Para comprobar que ha salido bien, utilzaremos el siguiente comando
+
+					'docker inspect [nombre-de-contenedor]'
+
+					.-Podemos agilizar estos ultimos pasos de la siguiente manera
+						'docker network create [nombre-de-la-red]'
+						'docker run -d --network [nombre-de-la-red] [nombre-del-contenedor] [nombre-de-la-imagen]'
+						.-En este caso los rangos de ips, mascaras de subred y demás, serán valores creados al azar por docker (al no haber incluido la información nosotros a la hora de crear la red)
+
+			.-Como conectar contenedores a la misma red
+				Para esto utilizaremos el siguiente comando
+
+				'docker network create [nombre-de-la-red]'
+				'docker run -d --network [nombre-de-la-red] [nombre-del-contenedor-1] [nombre-de-la-imagen]'
+				'docker run -d --network [nombre-de-la-red] [nombre-del-contenedor-2] [nombre-de-la-imagen]'
+
+				.-Ahora tenemos dos contenedores dentro de la misma red, esta red podemos definir sus parámetros cuando la creamos, a continuación, al estar dentro de la misma red estos dos contenedores, podemos hacer un ping para comprobar su conectividad pero en vez de introducir la ip del otro contenedor, podemos utilizar el nombre del contenedor, ejemplo
+
+				'docker exec [nombre-del-contenedor-1] bash -c "ping [nombre-del-contenedor-2]"'
+				'docker exec [nombre-del-contenedor-2] bash -c "ping [nombre-del-contenedor-1]"'
+
+			.-Como conectar contenedores en distintas redes
+				Ejecutando un solo comando podemos conectar un conetendor que se encuentra en una red a otra red distinta
+
+					'docker network connect [nombre-de-la-red] [nombre-de-contendor]'
+					.-Con esto lo que hace docker es añadir otra interfaz de red incluyendo una ip dentro del rango de la red que acabamos de añadir a nuestro contenedor, asi de este modo el contenedor que antes no podía ver la otra red, ahora si que puede. Estos nuevos parametros los podemos comprobar mediante el siguiente comando
+
+					'docker inspect [nombre-del-contendor]'
+
+			.-Como desconectar un contenedor a una red
+				Esto lo podemos llevar a cabo mediante el siguiente comando
+
+				'docker disconnect [nombre-de-la-red] [nombre-del-contenedor]'
+				.-Ahora si ejecutamos el siguiente comando
+				
+				'docker inspect [nombre-del-contenedor]'
+					Observamos que solo tiene una interfaz de red
+
+		.-Como eliminar redes
+			->Podemos realizar esta acción mediante el siguiente comando
+				'docker network rm [nombre-de-la-red]'
+				->Esto nos lanazará un error si existen contenedores que esten utilizando esta red, la manera de solucionar este pequeño problema es eliminando los contenedores que hagan uso de esta red
+
+		.-Como asignar una IP a un contendor
+			->Debemos crear antes una red con los parámetros de subred
+				
+				'docker network create --subnet 127.128.10.0/24 --gateway 127.128.10.0 -d bridge [nombre-de-la-red]'
+				.-A continuación deberemos de incluir el nombre de la red y la IP que nosotros queremos cuando creamos un nuevo contendor, de la siguiente manera
+
+				'docker run --network [nombre-de-la-red] --ip 127.128.10.50 -d --name [nombre-del-contenedor] -ti [nombre-de-la-imagen]'
+				.-Podemos comprobar el reusltado obtenido mediante el siguiente comando
+
+				'docker inspect [nombre-del-contenedor]'
+
+		.-La red de host
+			->La red host, es una red existente dentro de docker, si creamos un contendor y lo incluimos en la red host, este contendor tendrá  la misma ip que la máquina host.
+
+		.-La red none
+			->Es una red que tiene docker por defecto, esta se utiliza para que los contenedor que agregemos a esta, no tengan red.
+
+
+	Docker compose
+
+		.-Es una herramienta que nos permite crear aplicaciones multicontenedor, por ejemplo, si queremos instalar wordpress, necesitaríamos un servidor web, otro para la base de datos, etc.
+		.-El formato de este fichero tiene la extension .yml
+		.-El fichero por defecto se nombrará bajo el nombre de docker-compose.yml (este puede cambiar si así lo necesitamos)
+			.-Este fichero se compone de 4 partes:
+				*-version: (obligatoria) -> Este valor biene predefinido por la información facilitada en la siguiente URL:
+					.-https://docs.docker.com/compose/compose-file/compose-versioning/
+						->Hay que poner siempre el último valor del listado 'Reference file'
+				*-services: (obligatoria) ->Aquí se definen los siguientes servicios que deseamos que docker ejecute, para ver como se crean podemos consultar la siguiente web:
+					->https://docs.docker.com/compose/compose-file/
+				*-volumes: (opcional)
+				*-network: (opcional)
+
+		.-Para ejecutar este nuevo fichero utilizaremos el siguiente comando:
+
+			'docker compose up -d'
+		
+		.-Para parar y eliminar el contenedor creado con el anterior comando utilizaremos el siguiente comando:
+
+			'docker compose down'
+
+
+		.-Variables de entorno en docker-compose
+			.-Por norma general incluiremos tantas variables de entorno como desdeamos, dentro del servicio que hemos creado en el fichero docker-compose, de la siguiente manera, ejemplo:
+
+				services:
+					db:
+						image: mysql:5.7
+						container_name: mysql
+						ports: 
+						 - '3306:3306'
+						 enviorment:
+						 - "MYSQL_ROOT_PASSWORD=12345678"
+
+			.-Podemos indicarle a docker-composer que las variables de entorno se encuentran en un fichero de la siguiente manera:
+				
+				env_file: nombre_fichero
+				.-Esto sustituye a la línea que definia 'enviorment'
+				.-El fichero debe de estar en el mismo directorio que el fichero docker-compose, de no ser así, se deberá de incluir la ruta absoluta hasta el.
+
+
+		.-Volúmenes en compose
+			.-Volumen nombrado
+				.-Se incluye un nuevo parámetro a la misma altura que el version y services, además sei nvluirá dentro del apartado web si así lo deseamos, de no ser así y el volumen lo vamos  autilizar en algún otro servicio lo incluiremos en la declaración del mismo.
+					.-Ejemplo:
+						version: '3'
+						services:
+							web:
+								container_name: nginx1
+								ports: 
+								 - '8080:80'
+								volumes:
+								 - "vol2:/usr/share/nginx/html" => [nombre-volumen]:[ruta-de-la-imagen-docker]
+								 image: nginx
+							volumes:
+								vol2:
+			
+			.-Volumen de host:
+				.-Se crea de manera similar al anterior tipo de volumen, pero esta vez no hay que declarar ningún 'volumes', se hace de la siguiente manera:
+
+					version: '3'
+						services:
+							web:
+								container_name: nginx2
+								ports: 
+								 - '8080:80'
+								volumes:
+								 - "/home/:/usr/share/nginx/html" => [nombre-carpeta-host]:[ruta-de-la-imagen-docker]
+								 image: nginx
+				
+				.-Se incluye el nombre de la carpeta del host que queremos mapear dentro de nuestra imagen de docker.
+
+
+		.-Redes en compose
+			.-Podemos crear una red de lasiguiente manera:
+
+				version: '3'
+				services:
+					web:
+						container_name: nginx
+						ports: 
+						 - '8001:80'
+						image: http
+						network:
+						 - net-test
+					networks:
+						net-test:
+
+				->Se crea como otro 'argumento' y luego se incluye dentro del servicio que deseamos
+
+		.-Crear imágenes con docker-compose
+			.-Esta sirve para crear imágenes personalizadas a través de docker-compose, requiere de un fichero Dockerfile, se hace de la siguiente manera:
+				version: '3'
+				services:
+					web:
+						container_name: web
+						image: [nombre-personalizado-de-la-imagen]
+						build: [ruta-del-docker-file]
+
+				->Si nuestro fichero Dockerfile tiene otro nombre debremos de intrlducir los siguientes parámetros:
+					build:
+						context: [ruta-del-fichero]
+						dockerfile: [nombre-del-fichero]
+
+					->A continuación ejecutamos el fichero Docker-compose con el siguiente comando:
+
+						'docker-compose build'
+						->Y a continuación creará la nueva imagen a partir de un fichero Dockerfile con nombre 
+						personalizado
+
+
+		.-Limitar recursos en contenedores compose
+			->se hace de la siguiente manera:
+				version: '3'
+				services:
+					web:
+						container name: nginx
+						mem_limit: 20m
+						cpuset: "0"
+						image: nginx:alpine
+
+
+
+		.-Política de reinicio de contenedores
+			.-Se trata de las condiciones en las cuales un contenedor debería ser reiniciado o no
+			.-En la siguiente url encontraremos información al respecto:
+				https://docs.docker.com/config/containers/start-containers-automatically/
+			.-La opción por defecto es no
+			.-Se incluye dentro del fichero docker-compose como una opción más
+			.-Ejemplo:
+				version '3'
+				services:
+					test:
+						container_name: test
+						image: restart-image
+						build: .
+						restart: always
+
+				->Con esta opción cuando el contenedor se detenga, se reiniciará siempre
+
+			->Con la opción 'unless-stopped', docker reiniciará el contendor a menos que lo apaguemos nosotros mediante el comando 'docker stop'
+			->Con la opción 'on-failure', docker reiniciará el contenedor si detecta que ha dejado de ejecutarse debido a un error
